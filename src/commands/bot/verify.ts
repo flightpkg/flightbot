@@ -6,10 +6,7 @@ import path from "path"
 import fs from "fs"
 
 let captcha = new Captcha();
-
-captcha.JPEGStream.pipe(fs.createWriteStream(path.join(__dirname, `${captcha.value}.jpeg`)))
-const file  = path.join(__dirname, `${captcha.value}.jpeg`)
-const attachment = new MessageAttachment(file);
+const attachment = new MessageAttachment(captcha.JPEGStream, "captcha.jpeg");
 
 export default new Command({
     name: "verify",
@@ -49,13 +46,43 @@ export default new Command({
             .addField("Verification", "Enter the text you see in the image.")
             .setThumbnail(`attachment://${captcha.value}.jpeg`);
 
-            client.on('interactionCreate', async interaction => {
-                if (!interaction.isButton()) return;
-                if (interaction.customId != "verify") {interaction.deferReply(); return};
+            client.on('interactionCreate', async i => {
+                if (!i.isButton()) return;
                 await interaction.reply({
                     embeds: [captcha_embed],
                     files: [attachment]
                 });
+            });
+
+            const filter = m => m.author.id == interaction.user.id;
+            const collector = interaction.channel.createMessageCollector({ filter, time: 15000 });
+
+            collector.on('collect', m => {
+                var embed = new MessageEmbed()
+                    .setTimestamp()
+                    .setColor("#2F3136")
+                    .setFooter({
+                        text: "Requested by " + interaction.user.username + "#" + interaction.user.discriminator,
+                        iconURL: interaction.user.avatarURL()
+                    })
+
+                // while (true) {
+                    if (m.content == captcha.value) {
+                        embed
+                            .setTitle("✅ • Verify")
+                            .setDescription("You have been verified into the guild.");
+                        m.reply({embeds: [embed]});
+                        collector.stop();
+                        // break;
+                    } else {
+                        embed
+                            .setTitle("❌ • Verify")
+                            .setDescription("Please try again.");
+                        m.reply({embeds: [embed]});
+                        collector.stop();
+                        // break;
+                    }
+                //}
             });
     }
 });
