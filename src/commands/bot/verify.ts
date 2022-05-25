@@ -47,13 +47,16 @@ export default new Command({
 
             client.on('interactionCreate', async i => {
                 if (!i.isButton()) return;
-                // i.deferUpdate()
-                await interaction.editReply({
-                    embeds: [captcha_embed],
-                    files: [attachment],
-                    components: []
-                });
+                //if (i.id == "verify"){
+                    await interaction.editReply({
+                        embeds: [captcha_embed],
+                        files: [attachment],
+                        components: []
+                    });
+                    console.log(`${captcha.value}`)
+                //}
             });
+
 
             const filter = m => m.author.id == interaction.user.id;
             const collector = interaction.channel.createMessageCollector({ filter, time: 15000 });
@@ -70,22 +73,36 @@ export default new Command({
                     })
 
                 // while (true) {
-                    if (m.content == captcha.value) {
-                        embed
-                            .setTitle("✅ • Verify")
-                            .setDescription("You have been verified into the guild.");
-                        m.reply({embeds: [embed]});
-                        collector.stop();
-                        // break;
-                    } else {
+
+                    if (m.content != captcha.value) {
                         embed
                             .setTitle("❌ • Verify")
-                            .setDescription("Please try again.");
-                        m.reply({embeds: [embed]});
+                            .setDescription(`<@${interaction.user.id}> failed to verify. Please run the \`/verify\` command again.`);
+                        m.channel.send({
+                            embeds: [embed]
+                        });
+                        m.delete();
                         collector.stop();
-                        // break;
+                        return;
                     }
+                    
+                    embed
+                        .setTitle("✅ • Verify")
+                        .setDescription(`<@${interaction.user.id}> has been verified into the guild.`)
+                    
+                    interaction.editReply(
+                        {
+                            embeds: [embed],
+                            files: [],
+                        }
+                    );
+                    // TODO: Change guild and role ids
+                    client.guilds.cache.get("893767961750433813").members.cache.get(interaction.user.id).roles.add("958676346333179955");
+
+                    collector.stop();
+                    return;
                 //}
             });
+            return;
     }
 });
