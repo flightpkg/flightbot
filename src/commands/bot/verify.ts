@@ -2,8 +2,6 @@ import { Command } from "../../structures/Command";
 import { MessageEmbed, MessageActionRow, MessageButton, MessageAttachment } from "discord.js";
 import Captcha from "@haileybot/captcha-generator"
 import { client } from "../..";
-import path from "path"
-import fs from "fs"
 
 let captcha = new Captcha();
 const attachment = new MessageAttachment(captcha.JPEGStream, "captcha.jpeg");
@@ -45,17 +43,22 @@ export default new Command({
         embed
             .addField("Verification", "Enter the text you see in the image.")
             .setThumbnail(`attachment://${captcha.value}.jpeg`);
+            
 
             client.on('interactionCreate', async i => {
                 if (!i.isButton()) return;
-                await interaction.reply({
+                // i.deferUpdate()
+                await interaction.editReply({
                     embeds: [captcha_embed],
-                    files: [attachment]
+                    files: [attachment],
+                    components: []
                 });
             });
 
             const filter = m => m.author.id == interaction.user.id;
             const collector = interaction.channel.createMessageCollector({ filter, time: 15000 });
+
+            
 
             collector.on('collect', m => {
                 var embed = new MessageEmbed()
