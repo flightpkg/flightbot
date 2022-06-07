@@ -15,7 +15,7 @@
     "description": "",
     "dependencies": {
         "@haileybot/captcha-generator": "^1.7.0",
-        "chart.js": "^2.7.3",
+        "chart.js": "^2.9.4",
         "discord.js": "^13.5.0",
         "dotenv": "^10.0.0",
         "glob": "^7.2.0"
