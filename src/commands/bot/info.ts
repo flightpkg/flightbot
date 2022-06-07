@@ -1,5 +1,6 @@
 import { Command } from "../../structures/Command";
 import { MessageEmbed, MessageActionRow, MessageButton } from "discord.js";
+import { client, reply, replyAlone, replyEnd } from "../..";
 
 export default new Command({
     name: "info",
@@ -16,20 +17,43 @@ export default new Command({
             .setColor("#2F3136")
 
         embed
-            .addField("Developers", "<@829372486780715018> and <@893762371770802227>")
-            .addField("Cached Data", `Guilds: ${interaction.client.guilds.cache.size.toString()}\nUsers: ${interaction.client.users.cache.size.toString()}`)
-            .addField("Bot Info",
-                `Node: ${process.version}
-                Discord.js: ${require("discord.js").version}
-                Typescript: ${require("typescript").version}
-                Version: ${require("../../../package.json").version}
+            .addField("Developers", `${replyAlone} <@829372486780715018> and <@893762371770802227>`)
+            .addField("Cached Data", 
+                `${reply} Guilds: ${interaction.client.guilds.cache.size.toString()}
+                ${replyEnd} Users: ${interaction.client.users.cache.size.toString()}
                 `
             )
+            .addField("Bot Info",
+                `${reply} Node: ${process.version}
+                ${reply }Discord.js: ${require("discord.js").version}
+                ${reply} Typescript: ${require("typescript").version}
+                ${replyEnd} Version: ${require("../../../package.json").version}
+                `
+            )
+
+            let totalSeconds = (client.uptime / 1000);
+            let days = Math.floor(totalSeconds / 86400);
+            let hours = Math.floor(totalSeconds / 3600);
+            totalSeconds %= 3600;
+            let minutes = Math.floor(totalSeconds / 60);
+            let seconds = Math.floor(totalSeconds % 60);
+
+        embed
+            .addField("Bot Info",
+                `${reply} Uptime: ${days} days, ${hours} hours, ${minutes} minutes, ${seconds} seconds
+                ${replyEnd} Ping: ${Math.round(interaction.client.ws.ping)}ms
+                `
+            )
+
             const row = new MessageActionRow()
 			.addComponents(
 				new MessageButton()
                     .setURL("https://flightpkg.js.org/")
                     .setLabel("Website")
+                    .setStyle('LINK'),
+                new MessageButton()
+                    .setURL("https://github.com/flightpkg/flight")
+                    .setLabel("GitHub")
                     .setStyle('LINK'),
 			);
             interaction.followUp({embeds: [embed], components: [row] });
